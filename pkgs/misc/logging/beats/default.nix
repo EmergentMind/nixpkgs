@@ -1,8 +1,8 @@
-{ lib, fetchFromGitHub, elk7Version, buildGoModule, libpcap, nixosTests, systemd, config }:
+{ lib, fetchFromGitHub, elkVersion, buildGoModule, libpcap, nixosTests, systemd, config }:
 
 let beat = package: extraArgs: buildGoModule (lib.attrsets.recursiveUpdate (rec {
   pname = package;
-  version = elk7Version;
+  version = elkVersion;
 
   src = fetchFromGitHub {
     owner = "elastic";
@@ -24,8 +24,8 @@ let beat = package: extraArgs: buildGoModule (lib.attrsets.recursiveUpdate (rec 
 }) extraArgs);
 in
 rec {
-  auditbeat7 = beat "auditbeat" { meta.description = "Lightweight shipper for audit data"; };
-  filebeat7 = beat "filebeat" {
+  auditbeat = beat "auditbeat" { meta.description = "Lightweight shipper for audit data"; };
+  filebeat = beat "filebeat" {
     meta.description = "Lightweight shipper for logfiles";
     buildInputs = [ systemd ];
     tags = [ "withjournald" ];
@@ -33,18 +33,18 @@ rec {
       patchelf --set-rpath ${lib.makeLibraryPath [ (lib.getLib systemd) ]} "$out/bin/filebeat"
     '';
   };
-  heartbeat7 = beat "heartbeat" { meta.description = "Lightweight shipper for uptime monitoring"; };
-  metricbeat7 = beat "metricbeat" {
+  heartbeat = beat "heartbeat" { meta.description = "Lightweight shipper for uptime monitoring"; };
+  metricbeat = beat "metricbeat" {
     meta.description = "Lightweight shipper for metrics";
     passthru.tests =
       lib.optionalAttrs config.allowUnfree (
-        assert metricbeat7.drvPath == nixosTests.elk.unfree.ELK-7.elkPackages.metricbeat.drvPath;
+        assert metricbeat.drvPath == nixosTests.elk.unfree.ELK.elkPackages.metricbeat.drvPath;
         {
-          elk = nixosTests.elk.unfree.ELK-7;
+          elk = nixosTests.elk.unfree.ELK;
         }
       );
   };
-  packetbeat7 = beat "packetbeat" {
+  packetbeat = beat "packetbeat" {
     buildInputs = [ libpcap ];
     meta.description = "Network packet analyzer that ships data to Elasticsearch";
     meta.longDescription = ''

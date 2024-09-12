@@ -1,7 +1,10 @@
-{ lib, stdenv, fetchurl, unzip, elasticsearch }:
+{ elkVersion, lib, stdenv, fetchurl, unzip, elasticsearch }:
+
 
 let
+  # esVersion will be compared to elkVersion in case the plugins are enabled on a different channel than the elasticsearch package was enabled.
   esVersion = elasticsearch.version;
+  version = elkVersion;
 
   esPlugin =
     a@{
@@ -30,16 +33,15 @@ let
     });
 in
 {
+  if version != esVersion
+  then throw "Unsupported elasticsearch version ${esVersion}; plugin ${pluginName} ${version} requires elasticsearch version ${version}.";
 
   analysis-icu = esPlugin rec {
     name = "elasticsearch-analysis-icu-${version}";
     pluginName = "analysis-icu";
-    version = esVersion;
     src = fetchurl {
       url = "https://artifacts.elastic.co/downloads/elasticsearch-plugins/${pluginName}/${pluginName}-${version}.zip";
-      hash =
-        if version == "7.17.16" then "sha256-wgm6N5fofs5wTM25ZT3dJkg7iDesXsc3Up419IAY9gk="
-        else throw "unsupported version ${version} for plugin ${pluginName}";
+      hash = "sha256";
     };
     meta = with lib; {
       homepage = "https://github.com/elastic/elasticsearch/tree/master/plugins/analysis-icu";
@@ -50,12 +52,9 @@ in
 
   analysis-kuromoji = esPlugin rec {
     pluginName = "analysis-kuromoji";
-    version = esVersion;
     src = fetchurl {
       url = "https://artifacts.elastic.co/downloads/elasticsearch-plugins/${pluginName}/${pluginName}-${version}.zip";
-      hash =
-        if version == "7.17.16" then "sha256-SShdBcWfm21XoVhghSSiWIhsoXzG7wz6162iOmuf5EU="
-        else throw "unsupported version ${version} for plugin ${pluginName}";
+      hash = "sha256";
     };
     meta = with lib; {
       homepage = "https://github.com/elastic/elasticsearch/tree/master/plugins/analysis-kuromoji";
@@ -66,12 +65,9 @@ in
 
   analysis-lemmagen = esPlugin rec {
     pluginName = "analysis-lemmagen";
-    version = esVersion;
     src = fetchurl {
       url = "https://github.com/vhyza/elasticsearch-${pluginName}/releases/download/v${version}/elasticsearch-${pluginName}-${version}-plugin.zip";
-      hash =
-        if version == "7.17.9" then "sha256-iY25apDkS6s0RoR9dVL2o/hFuUo6XhMzLjl8wDSFejk="
-        else throw "unsupported version ${version} for plugin ${pluginName}";
+      hash = "sha256";
     };
     meta = with lib; {
       homepage = "https://github.com/vhyza/elasticsearch-analysis-lemmagen";
@@ -83,12 +79,9 @@ in
 
   analysis-phonetic = esPlugin rec {
     pluginName = "analysis-phonetic";
-    version = esVersion;
     src = fetchurl {
       url = "https://artifacts.elastic.co/downloads/elasticsearch-plugins/${pluginName}/${pluginName}-${version}.zip";
-      hash =
-        if version == "7.17.16" then "sha256-S/Cp9opeLitFh2/3Qw7/MFt6GcYKufxXKD6cJSi3SaQ="
-        else throw "unsupported version ${version} for plugin ${pluginName}";
+      hash = "sha256";
     };
     meta = with lib; {
       homepage = "https://github.com/elastic/elasticsearch/tree/master/plugins/analysis-phonetic";
@@ -99,12 +92,9 @@ in
 
   discovery-ec2 = esPlugin rec {
     pluginName = "discovery-ec2";
-    version = esVersion;
     src = fetchurl {
       url = "https://artifacts.elastic.co/downloads/elasticsearch-plugins/${pluginName}/${pluginName}-${version}.zip";
-      hash =
-        if version == "7.17.16" then "sha256-hMErTLd5fXg420Olz+j6Zv7WByA1aNq9FlEgCtkYIxY="
-        else throw "unsupported version ${version} for plugin ${pluginName}";
+      hash = "sha256";
     };
     meta = with lib; {
       homepage = "https://github.com/elastic/elasticsearch/tree/master/plugins/discovery-ec2";
@@ -115,12 +105,9 @@ in
 
   ingest-attachment = esPlugin rec {
     pluginName = "ingest-attachment";
-    version = esVersion;
     src = fetchurl {
       url = "https://artifacts.elastic.co/downloads/elasticsearch-plugins/${pluginName}/${pluginName}-${version}.zip";
-      hash =
-        if version == "7.17.16" then "sha256-z0gfdx98urCzdQNlVn99CmteG6jweOmUDmGJW89twtU="
-        else throw "unsupported version ${version} for plugin ${pluginName}";
+      hash = "sha256";
     };
     meta = with lib; {
       homepage = "https://github.com/elastic/elasticsearch/tree/master/plugins/ingest-attachment";
@@ -131,12 +118,9 @@ in
 
   repository-s3 = esPlugin rec {
     pluginName = "repository-s3";
-    version = esVersion;
     src = fetchurl {
-      url = "https://artifacts.elastic.co/downloads/elasticsearch-plugins/${pluginName}/${pluginName}-${esVersion}.zip";
-      hash =
-        if version == "7.17.16" then "sha256-TWMN8jzFjzBVTUB+zn4tJr47VMXHC8U+014BvnArK8M="
-        else throw "unsupported version ${version} for plugin ${pluginName}";
+      url = "https://artifacts.elastic.co/downloads/elasticsearch-plugins/${pluginName}/${pluginName}-${version}.zip";
+      hash = "sha256";
     };
     meta = with lib; {
       homepage = "https://github.com/elastic/elasticsearch/tree/master/plugins/repository-s3";
@@ -147,12 +131,9 @@ in
 
   repository-gcs = esPlugin rec {
     pluginName = "repository-gcs";
-    version = esVersion;
     src = fetchurl {
-      url = "https://artifacts.elastic.co/downloads/elasticsearch-plugins/${pluginName}/${pluginName}-${esVersion}.zip";
-      hash =
-        if version == "7.17.16" then "sha256-hG5wy1Xw4T1NzI7pja3CejwJg002/n6YqM1/QaVSWbg="
-        else throw "unsupported version ${version} for plugin ${pluginName}";
+      url = "https://artifacts.elastic.co/downloads/elasticsearch-plugins/${pluginName}/${pluginName}-${version}.zip";
+      hash = "sha256";
     };
     meta = with lib; {
       homepage = "https://github.com/elastic/elasticsearch/tree/master/plugins/repository-gcs";
@@ -161,15 +142,23 @@ in
     };
   };
 
+  # Search Guard is a third-party plugin that typically lags behind the latest elasticsearch version and follows a different versioning scheme than official elastic plugins.
+  # FIXME: How to handle this situation?
   search-guard = let
-    majorVersion = lib.head (builtins.splitVersion esVersion);
+    majorVersion = lib.head (builtins.splitVersion version);
   in esPlugin rec {
     pluginName = "search-guard";
     version =
       # https://docs.search-guard.com/latest/search-guard-versions
-      if esVersion == "7.17.16" then "${esVersion}-53.8.0"
+      if esVersion == "8.14.1" then "${esVersion}-53.8.0"
+      else if esVersion == "7.17.16" then "${esVersion}-53.8.0"
       else throw "unsupported version ${esVersion} for plugin ${pluginName}";
     src =
+      if esVersion == "8.14.1" then
+        fetchurl {
+          url = "https://maven.search-guard.com/search-guard-suite-release/com/floragunn/search-guard-suite-plugin/${version}/search-guard-suite-plugin-${version}.zip";
+          hash = "";
+        }
       if esVersion == "7.17.16" then
         fetchurl {
           url = "https://maven.search-guard.com/search-guard-suite-release/com/floragunn/search-guard-suite-plugin/${version}/search-guard-suite-plugin-${version}.zip";

@@ -1,5 +1,5 @@
 { config
-, elk7Version
+, elkVersion
 , enableUnfree ? true
 , lib
 , stdenv
@@ -26,7 +26,7 @@ let
       aarch64-linux = "sha512-QWW0AXOMNIXThxpUiRomvINm+917MvGrSDndrEw11IYYuvi0d0dckJiRytfnBbBNoOKpVhB68uOmfjIcZBNpWQ==";
     };
   this = stdenv.mkDerivation rec {
-    version = elk7Version;
+    version = elkVersion;
     pname = "logstash${lib.optionalString (!enableUnfree) "-oss"}";
 
 
@@ -78,9 +78,9 @@ let
     };
     passthru.tests =
       lib.optionalAttrs (config.allowUnfree && enableUnfree) (
-        assert this.drvPath == nixosTests.elk.unfree.ELK-7.elkPackages.logstash.drvPath;
+        assert this.drvPath == nixosTests.elk.unfree.ELK.elkPackages.logstash.drvPath;
         {
-          elk = nixosTests.elk.unfree.ELK-7;
+          elk = nixosTests.elk.unfree.ELK;
         }
       );
   };

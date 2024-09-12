@@ -1,6 +1,6 @@
 # To run the test on the unfree ELK use the following command:
 # cd path/to/nixpkgs
-# NIXPKGS_ALLOW_UNFREE=1 nix-build -A nixosTests.elk.unfree.ELK-7
+# NIXPKGS_ALLOW_UNFREE=1 nix-build -A nixosTests.elk.unfree.ELK
 
 { system ? builtins.currentSystem,
   config ? {},
@@ -153,7 +153,7 @@ let
     passthru.elkPackages = elk;
     testScript =
       let
-        valueObject = lib.optionalString (lib.versionAtLeast elk.elasticsearch.version "7") ".value";
+        valueObject = lib.optionalString (lib.versionAtLeast elk.elasticsearch.version "8") ".value";
       in ''
       import json
 
@@ -258,19 +258,19 @@ let
 in {
   # We currently only package upstream binaries.
   # Feel free to package an SSPL licensed source-based package!
-  # ELK-7 = mkElkTest "elk-7-oss" {
-  #   name = "elk-7";
-  #   elasticsearch = pkgs.elasticsearch7-oss;
-  #   logstash      = pkgs.logstash7-oss;
-  #   filebeat      = pkgs.filebeat7;
-  #   metricbeat    = pkgs.metricbeat7;
+  # ELK = mkElkTest "elk-oss" {
+  #   name = "elk";
+  #   elasticsearch = pkgs.elasticsearch-oss;
+  #   logstash      = pkgs.logstash-oss;
+  #   filebeat      = pkgs.filebeat;
+  #   metricbeat    = pkgs.metricbeat;
   # };
   unfree = lib.dontRecurseIntoAttrs {
-    ELK-7 = mkElkTest "elk-7" {
-      elasticsearch = pkgs.elasticsearch7;
-      logstash      = pkgs.logstash7;
-      filebeat      = pkgs.filebeat7;
-      metricbeat    = pkgs.metricbeat7;
+    ELK = mkElkTest "elk" {
+      elasticsearch = pkgs.elasticsearch;
+      logstash      = pkgs.logstash;
+      filebeat      = pkgs.filebeat;
+      metricbeat    = pkgs.metricbeat;
     };
   };
 }

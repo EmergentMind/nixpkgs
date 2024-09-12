@@ -1,4 +1,4 @@
-{ elk7Version
+{ elkVersion
 , lib
 , stdenv
 , fetchurl
@@ -18,21 +18,22 @@ let
   plat = elemAt info 1;
   hashes =
     {
-      x86_64-linux   = "sha512-OiWGRxaCdRxXuxE/W04v87ytzOeUEcHRjF5nyRkdqSbZSnLXUyKOYQ4fKmk4til0VBOaKZYId20XyPiu/XTXNw==";
-      x86_64-darwin  = "sha512-V/vKYL96+M1lp7ZJlvuneRBePWZmucUANfUrFPMuq+fnUP4nN69RStLWcgwgt65EspFMBwKVyQbak4swV8rWxw==";
-      aarch64-linux  = "sha512-fNgVRaIIGx01reNHOnGKhMOG1aYU7gC8HLpIESSbM3+9xO1q9IHIaL/ObI/w2RYj/lD22d7PAdX5N6Hd1pVSAA==";
-      aarch64-darwin = "sha512-DgexeyoxZ1YTPw9HjSUAM6eC8XtzIw7MY1WUVsIa8zl5j3RpCp25s3oI12BWefjYYCTjdtFDMsnoFSqZBabLig==";
+      x86_64-linux   = "sha256-fF77vssb7jPF7NrE07BwbXAKp5Y3r/8oDpPIqaInI2A=";
+      x86_64-darwin  = "sha256-fF77vssb7jPF7NrE07BwbXAKp5Y3r/8oDpPIqaInI2A=";
+      aarch64-linux  = "sha256-fF77vssb7jPF7NrE07BwbXAKp5Y3r/8oDpPIqaInI2A=";
+      aarch64-darwin = "sha256-fF77vssb7jPF7NrE07BwbXAKp5Y3r/8oDpPIqaInI2A=";
     };
 in
 stdenv.mkDerivation rec {
   pname = "elasticsearch";
-  version = elk7Version;
+  version = "8.14.1";
 
   src = fetchurl {
     url = "https://artifacts.elastic.co/downloads/elasticsearch/${pname}-${version}-${plat}-${arch}.tar.gz";
     hash = hashes.${stdenv.hostPlatform.system} or (throw "Unknown architecture");
   };
 
+#FIXME: patch required for 7.x to 8 potentially?
   patches = [ ./es-home-6.x.patch ];
 
   postPatch = ''
